@@ -1,7 +1,17 @@
-export default function Home() {
+import React from "react";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import HeroSection from "./components/HeroSection";
+
+export default function HomePage() {
   return (
-    <h1 className="text-5xl font-bold text-cyan-700 text-center mt-10">
-      Tailwind is Working! 🎯
-    </h1>
+    <div className="flex flex-col min-h-screen bg-white dark:bg-white text-black dark:text-white">
+      <Header />
+      <main className="flex-grow">
+        <HeroSection />
+      </main>
+      
+      <Footer />
+    </div>
   );
 }
