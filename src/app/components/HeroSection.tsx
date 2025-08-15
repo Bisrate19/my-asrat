@@ -142,7 +142,7 @@ export default function HeroSection() {
       </div>
 
       {/* Testimonials Section */}
-      <div className="flex flex-col items-center mb-24 w-full max-w-6xl">
+      <div className="flex flex-col items-center mb-16 w-full max-w-6xl">
         <h2 className="text-3xl font-bold mb-12 text-center">What Our Users Say</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
           {testimonials.map((t, index) => (
@@ -155,6 +155,22 @@ export default function HeroSection() {
               <p className="text-gray-500">{t.role}</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Small Donate & CTA Section */}
+      <div className="flex flex-col items-center py-1 mb-1 w-full max-w-md bg-purple-50 rounded-2xl p-6 shadow-lg text-center">
+        <h3 className="text-xl font-semibold mb-2">Support My Asrat Tracking</h3>
+        <p className="text-gray-700 text-sm mb-4">
+          If you find this app useful, consider supporting development.
+        </p>
+        <div className="flex space-x-4 py-4">
+          <button className="px-6 py-2 bg-purple-600 text-white text-sm font-semibold rounded-full hover:bg-purple-700 transition-all duration-300">
+            Donate
+          </button>
+          <button className="px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-all duration-300">
+            Get Started
+          </button>
         </div>
       </div>
     </section>
