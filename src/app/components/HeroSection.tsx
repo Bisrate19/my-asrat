@@ -1,32 +1,50 @@
+"use client";
+
+import {
+  CurrencyDollarIcon,
+  CalculatorIcon,
+  ClipboardDocumentCheckIcon,
+  ShieldCheckIcon,
+  ChartBarIcon,
+  BellAlertIcon,
+} from "@heroicons/react/24/outline";
+
 export default function HeroSection() {
   const features = [
     {
       title: "Track Your Income",
       description: "Easily record and monitor all your income sources in one place.",
+      icon: <CurrencyDollarIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />,
     },
     {
       title: "Calculate Tithes",
       description: "Automatically calculate 10% or custom tithes from your income.",
+      icon: <CalculatorIcon className="h-12 w-12 text-green-600 mx-auto mb-4" />,
     },
     {
       title: "Stay Organized",
       description: "Keep track of your remaining unspent income efficiently.",
+      icon: <ClipboardDocumentCheckIcon className="h-12 w-12 text-purple-600 mx-auto mb-4" />,
     },
     {
       title: "Secure & Private",
       description: "Your data is stored safely and only accessible to you.",
+      icon: <ShieldCheckIcon className="h-12 w-12 text-red-600 mx-auto mb-4" />,
     },
     {
-      title: "Calculate Tithes",
-      description: "Automatically calculate 10% or custom tithes from your income.",
-    },{
-      title: "Calculate Tithes",
-      description: "Automatically calculate 10% or custom tithes from your income.",
-    }
+      title: "Visual Reports",
+      description: "View clear graphs and summaries of your income and tithes.",
+      icon: <ChartBarIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />,
+    },
+    {
+      title: "Notifications",
+      description: "Receive timely reminders for tithes and income tracking.",
+      icon: <BellAlertIcon className="h-12 w-12 text-yellow-600 mx-auto mb-4" />,
+    },
   ];
 
   return (
-    <section className="flex flex-col items-center justify-center py-10 px-4 bg-gradient-to-r from-blue-50 via-white to-blue-50">
+    <section className="flex flex-col items-center justify-center py-24 px-4 bg-gradient-to-r from-blue-50 via-white to-blue-50">
       {/* Heading */}
       <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 text-center leading-tight">
         Welcome to My Asrat Tracking Website
@@ -46,12 +64,13 @@ export default function HeroSection() {
       </button>
 
       {/* Features Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full">
         {features.map((feature, index) => (
           <div
             key={index}
             className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-center"
           >
+            {feature.icon}
             <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
             <p className="text-gray-700">{feature.description}</p>
           </div>
