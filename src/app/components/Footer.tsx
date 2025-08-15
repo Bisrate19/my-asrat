@@ -1,7 +1,10 @@
 export default function Footer() {
   return (
-    <h1 className="text-5xl font-bold text-cyan-700 text-center mt-10">
-      Tailwind is Working! 🎯
-    </h1>
+    <footer className="w-full bg-gray-100 dark:bg-green-800 py-4 mt-auto">
+      <p className="text-center text-cyan-700 dark:text-cyan-300 text-sm">
+        © {new Date().getFullYear()} Tithe Tracker. All rights reserved.
+      </p>
+    </footer>
   );
 }
+ 
