@@ -1,10 +1,62 @@
 export default function HeroSection() {
+  const features = [
+    {
+      title: "Track Your Income",
+      description: "Easily record and monitor all your income sources in one place.",
+    },
+    {
+      title: "Calculate Tithes",
+      description: "Automatically calculate 10% or custom tithes from your income.",
+    },
+    {
+      title: "Stay Organized",
+      description: "Keep track of your remaining unspent income efficiently.",
+    },
+    {
+      title: "Secure & Private",
+      description: "Your data is stored safely and only accessible to you.",
+    },
+    {
+      title: "Calculate Tithes",
+      description: "Automatically calculate 10% or custom tithes from your income.",
+    },{
+      title: "Calculate Tithes",
+      description: "Automatically calculate 10% or custom tithes from your income.",
+    }
+  ];
+
   return (
-    <section className="flex flex-col items-center justify-center py-20">
-      <h1 className="text-4xl font-bold mb-4">Welcome to Tithe Tracker</h1>
-      <p className="text-lg text-gray-700 max-w-xl text-center">
-        Track your income and tithes easily, securely, and in one place.
+    <section className="flex flex-col items-center justify-center py-10 px-4 bg-gradient-to-r from-blue-50 via-white to-blue-50">
+      {/* Heading */}
+      <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 text-center leading-tight">
+        Welcome to My Asrat Tracking Website
+      </h1>
+
+      {/* Subtitle */}
+      <p className="text-lg md:text-xl text-gray-700 max-w-2xl text-center mb-12">
+        Track your income and tithes easily, securely, and all in one place.
       </p>
+
+      {/* Button */}
+      <button className="group flex items-center px-10 py-4 bg-blue-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 hover:bg-blue-700 transition-all duration-300 mb-12">
+        Start Tracking
+        <span className="ml-3 transition-transform duration-300 group-hover:translate-x-2">
+          ➔
+        </span>
+      </button>
+
+      {/* Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
+        {features.map((feature, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 text-center"
+          >
+            <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
+            <p className="text-gray-700">{feature.description}</p>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
