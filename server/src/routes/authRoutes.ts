@@ -33,7 +33,8 @@ router.post("/login", async (req, res) => {
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
     res.json({ token });
@@ -45,7 +46,8 @@ router.post("/login", async (req, res) => {
 // Middleware
 function authMiddleware(req: any, res: any, next: any) {
   const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ message: "No token provided" });
+  if (!authHeader)
+    return res.status(401).json({ message: "No token provided" });
 
   const token = authHeader.split(" ")[1];
   try {
