@@ -2,15 +2,26 @@
 
 type TitheSummaryProps = {
   totalIncome: number;
-  titheBalance: number;
+  tithe: number; // <-- add this
+  totalSpending: number;
+  remaining: number;
 };
 
-export default function TitheSummary({ totalIncome, titheBalance }: TitheSummaryProps) {
+export default function TitheSummary({
+  totalIncome,
+  tithe,
+  totalSpending,
+  remaining,
+}: TitheSummaryProps) {
   return (
-    <div className="border border-yellow-500 bg-white text-black p-4 rounded-lg shadow mb-6">
+    <div className="border border-yellow-500 bg-white text-black p-4 rounded-lg shadow">
       <h2 className="text-xl font-bold mb-2">Tithe Summary</h2>
-      <p>Total Income: {totalIncome}</p>
-      <p>Current Tithe Balance: {titheBalance}</p>
+      <ul className="space-y-1">
+        <li>Total Income: {totalIncome}</li>
+        <li>Tithe: {tithe}</li>
+        <li>Total Spending: {totalSpending}</li>
+        <li>Remaining: {remaining}</li>
+      </ul>
     </div>
   );
 }
