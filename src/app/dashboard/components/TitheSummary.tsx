@@ -1,45 +1,16 @@
 "use client";
 
-import DashboardCard from "./DashboardCard";
-
-type Summary = {
-  monthKey?: string | null;
-  thisMonthIncome?: number;
-  thisMonthTithe?: number;
-  remainingAfterTithe?: number;
-  carryOverUnspent?: number;
-  totalTitheAvailable?: number;
+type TitheSummaryProps = {
+  totalIncome: number;
+  titheBalance: number;
 };
 
-export default function TitheSummary({ summary }: { summary: Summary }) {
+export default function TitheSummary({ totalIncome, titheBalance }: TitheSummaryProps) {
   return (
-    <DashboardCard title="Tithe Summary">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-        <div className="rounded-xl p-3 border dark:border-zinc-800">
-          <div className="text-gray-500">This Month</div>
-          <div>
-            Income: <strong>{summary.thisMonthIncome ?? 0}</strong>
-          </div>
-          <div>
-            Tithe Deducted: <strong>{summary.thisMonthTithe ?? 0}</strong>
-          </div>
-          <div>
-            Income After Tithe:{" "}
-            <strong>{summary.remainingAfterTithe ?? 0}</strong>
-          </div>
-        </div>
-        <div className="rounded-xl p-3 border dark:border-zinc-800">
-          <div className="text-gray-500">Carry Over</div>
-          <div>
-            Unspent from Previous Months:{" "}
-            <strong>{summary.carryOverUnspent ?? 0}</strong>
-          </div>
-          <div>
-            Total Tithe Available:{" "}
-            <strong>{summary.totalTitheAvailable ?? 0}</strong>
-          </div>
-        </div>
-      </div>
-    </DashboardCard>
+    <div className="border border-yellow-500 bg-white text-black p-4 rounded-lg shadow mb-6">
+      <h2 className="text-xl font-bold mb-2">Tithe Summary</h2>
+      <p>Total Income: {totalIncome}</p>
+      <p>Current Tithe Balance: {titheBalance}</p>
+    </div>
   );
 }
