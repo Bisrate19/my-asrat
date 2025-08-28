@@ -3,6 +3,7 @@
 import { useState } from "react";
 import TitheSummary from "./components/TitheSummary";
 import SpendingTable from "./components/SpendingTable";
+import IncomeForm from "./components/IncomeForm";
 
 type IncomeRecord = { id: string; month: string; amount: number; tithe: number };
 type SpendingRecord = { id: string; description: string; amount: number; date: string };
@@ -11,16 +12,27 @@ export default function Dashboard() {
   const [incomeRecords, setIncomeRecords] = useState<IncomeRecord[]>([]);
   const [spendingRecords, setSpendingRecords] = useState<SpendingRecord[]>([]);
   const [titheBalance, setTitheBalance] = useState<number>(0);
-  const [initialBalance, setInitialBalance] = useState<number>(0);
+  const [initialBalance, setInitialBalance] = useState<number | null>(null);
+  const [initialInput, setInitialInput] = useState<string>(""); // temp input for initial
   const [titheRate, setTitheRate] = useState<number>(10); // % tithe rate
   const [constantIncome, setConstantIncome] = useState<boolean>(false);
 
   const currentMonth = new Date().toLocaleString("default", { month: "long", year: "numeric" });
 
-  // Add Initial Balance
+  // Add Initial Balance (only once)
   const handleSetInitial = (amount: number) => {
+    if (initialBalance !== null) return; // prevent reset
     setInitialBalance(amount);
     setTitheBalance(amount); // initial goes directly into tithe pool
+  };
+
+  const handleInitialSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = parseFloat(initialInput);
+    if (!isNaN(amount) && amount > 0 && initialBalance === null) {
+      handleSetInitial(amount);
+      setInitialInput("");
+    }
   };
 
   // Add Monthly Income
@@ -38,7 +50,7 @@ export default function Dashboard() {
     setTitheBalance((prev) => prev + titheAmount);
   };
 
-  // Add Spending (deducts only from tithe pool)
+  // Add Spending (deducts from tithe pool)
   const handleAddSpending = (description: string, amount: number) => {
     const newSpending: SpendingRecord = {
       id: Date.now().toString(),
@@ -52,33 +64,55 @@ export default function Dashboard() {
   };
 
   const totalIncome = incomeRecords.reduce((sum, r) => sum + r.amount, 0);
+  const totalSpending = spendingRecords.reduce((sum, r) => sum + r.amount, 0);
+  const totalTithe = incomeRecords.reduce((sum, r) => sum + r.tithe, 0);
+  const remaining = (initialBalance ?? 0) + totalTithe - totalSpending;
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Tithe Dashboard</h1>
 
-      {/* Summary Section */}
-      <TitheSummary totalIncome={totalIncome} titheBalance={titheBalance} />
+      {/* 1. Summary Section */}
+      <TitheSummary
+        initial={initialBalance ?? 0}
+        totalIncome={totalIncome}
+        tithe={totalTithe}
+        totalSpending={totalSpending}
+        remaining={remaining}
+      />
 
-      {/* Spending Section */}
+      {/* 2. Spending Section */}
       <SpendingTable spendingRecords={spendingRecords} onAddSpending={handleAddSpending} />
 
-      {/* Settings / Income Controls */}
+      {/* 3. Settings / Income Controls */}
       <div className="border p-4 rounded-lg bg-white text-black space-y-4">
         <h2 className="text-lg font-bold">Income Controls</h2>
 
-        {/* Initial Balance */}
-        <div className="flex gap-2 items-center">
-          <input
-            type="number"
-            placeholder="Set Initial Balance"
-            className="border rounded px-2 py-1 flex-1"
-            onChange={(e) => handleSetInitial(Number(e.target.value))}
-          />
-        </div>
+        {/* Initial Balance (set once permanently) */}
+        {initialBalance === null ? (
+          <form onSubmit={handleInitialSubmit} className="flex gap-2 items-center">
+            <input
+              type="number"
+              value={initialInput}
+              onChange={(e) => setInitialInput(e.target.value)}
+              placeholder="Set Initial Balance"
+              className="border rounded px-2 py-1 flex-1"
+            />
+            <button
+              type="submit"
+              className="bg-yellow-500 text-black px-4 py-1 rounded"
+            >
+              Save
+            </button>
+          </form>
+        ) : (
+          <p className="text-green-600 font-semibold">
+            Initial Balance set: {initialBalance}
+          </p>
+        )}
 
         {/* Monthly Income Form */}
-        <IncomeInput onAddIncome={handleAddIncome} />
+        <IncomeForm onAddIncome={handleAddIncome} />
 
         {/* Options */}
         <div className="flex gap-4 items-center">
@@ -103,7 +137,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Income History */}
+      {/* 4. Income History */}
       <div className="border p-4 rounded-lg bg-white text-black">
         <h2 className="text-lg font-bold mb-2">Income History</h2>
         {incomeRecords.length === 0 ? (
@@ -130,33 +164,5 @@ export default function Dashboard() {
         )}
       </div>
     </div>
-  );
-}
-
-// Small component for adding income
-function IncomeInput({ onAddIncome }: { onAddIncome: (amount: number) => void }) {
-  const [amount, setAmount] = useState<number>(0);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (amount > 0) {
-      onAddIncome(amount);
-      setAmount(0);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <input
-        type="number"
-        value={amount}
-        onChange={(e) => setAmount(Number(e.target.value))}
-        placeholder="Enter this month's income"
-        className="border rounded px-2 py-1 flex-1"
-      />
-      <button type="submit" className="bg-green-500 text-white px-4 py-1 rounded">
-        Add
-      </button>
-    </form>
   );
 }
