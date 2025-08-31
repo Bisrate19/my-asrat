@@ -14,37 +14,78 @@ export default function Dashboard() {
   const [spendingRecords, setSpendingRecords] = useState<SpendingRecord[]>([]);
   const [titheBalance, setTitheBalance] = useState<number>(0);
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
-  const [initialInput, setInitialInput] = useState<string>(""); // temp input for initial
-  const [titheRate, setTitheRate] = useState<number>(10); // % tithe rate
+  const [initialInput, setInitialInput] = useState<string>("");
+  const [titheRate, setTitheRate] = useState<number>(10);
   const [constantIncome, setConstantIncome] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>("");
 
   const currentMonth = new Date().toLocaleString("default", { month: "long", year: "numeric" });
 
- 
-
-// Inside your useEffect where you decode the token
-useEffect(() => {
-  if (typeof window !== "undefined") {
+  // --- Load user dashboard data on mount ---
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     const token = localStorage.getItem("token");
-    if (token) {
+    if (!token) return;
+
+    // Decode token for welcome message
+    try {
       const decoded: any = jwtDecode(token);
-      const email = decoded.email || "User";
-
-      // Extract name part only (before @)
-      const nameOnly = email.split("@")[0];
+      const nameOnly = decoded.email.split("@")[0];
       setUserEmail(nameOnly);
+    } catch (err) {
+      console.error("Failed to decode token:", err);
     }
-  }
-}, []);
 
+    // Fetch dashboard data
+    fetch("/api/dashboard", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) {
+          setInitialBalance(data.initialBalance ?? null);
+          setTitheRate(data.titheRate ?? 10);
+          setIncomeRecords(data.incomeRecords ?? []);
+          setSpendingRecords(data.spendingRecords ?? []);
+          const titheSum = (data.incomeRecords ?? []).reduce(
+            (sum: number, r: IncomeRecord) => sum + r.tithe,
+            0
+          );
+          const spendingSum = (data.spendingRecords ?? []).reduce(
+            (sum: number, r: SpendingRecord) => sum + r.amount,
+            0
+          );
+          setTitheBalance((data.initialBalance ?? 0) + titheSum - spendingSum);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
+  // --- Save dashboard updates to backend ---
+  const saveDashboard = async (updatedData: any) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  // Add Initial Balance (only once)
+    try {
+      await fetch("/api/dashboard", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+    } catch (err) {
+      console.error("Failed to save dashboard:", err);
+    }
+  };
+
+  // Add Initial Balance
   const handleSetInitial = (amount: number) => {
-    if (initialBalance !== null) return; // prevent reset
+    if (initialBalance !== null) return;
     setInitialBalance(amount);
-    setTitheBalance(amount); // initial goes directly into tithe pool
+    setTitheBalance(amount);
+    saveDashboard({ initialBalance: amount, titheRate, incomeRecords, spendingRecords });
   };
 
   const handleInitialSubmit = (e: React.FormEvent) => {
@@ -59,19 +100,19 @@ useEffect(() => {
   // Add Monthly Income
   const handleAddIncome = (amount: number) => {
     const titheAmount = amount * (titheRate / 100);
-
     const newIncome: IncomeRecord = {
       id: Date.now().toString(),
       month: currentMonth,
       amount,
       tithe: titheAmount,
     };
-
-    setIncomeRecords((prev) => [...prev, newIncome]);
+    const updatedIncomeRecords = [...incomeRecords, newIncome];
+    setIncomeRecords(updatedIncomeRecords);
     setTitheBalance((prev) => prev + titheAmount);
+    saveDashboard({ initialBalance, titheRate, incomeRecords: updatedIncomeRecords, spendingRecords });
   };
 
-  // Add Spending (deducts from tithe pool)
+  // Add Spending
   const handleAddSpending = (description: string, amount: number) => {
     const newSpending: SpendingRecord = {
       id: Date.now().toString(),
@@ -79,9 +120,10 @@ useEffect(() => {
       amount,
       date: new Date().toLocaleDateString(),
     };
-
-    setSpendingRecords((prev) => [...prev, newSpending]);
+    const updatedSpendingRecords = [...spendingRecords, newSpending];
+    setSpendingRecords(updatedSpendingRecords);
     setTitheBalance((prev) => prev - amount);
+    saveDashboard({ initialBalance, titheRate, incomeRecords, spendingRecords: updatedSpendingRecords });
   };
 
   const totalIncome = incomeRecords.reduce((sum, r) => sum + r.amount, 0);
@@ -91,14 +133,9 @@ useEffect(() => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Welcome Message */}
-      <h1 className="text-2xl font-bold mb-4">
-        Welcome, {userEmail || "User"}!
-      </h1>
-
+      <h1 className="text-2xl font-bold mb-4">Welcome, {userEmail || "User"}!</h1>
       <h2 className="text-2xl font-bold">Tithe Dashboard</h2>
 
-      {/* 1. Summary Section */}
       <TitheSummary
         initial={initialBalance ?? 0}
         totalIncome={totalIncome}
@@ -107,14 +144,11 @@ useEffect(() => {
         remaining={remaining}
       />
 
-      {/* 2. Spending Section */}
       <SpendingTable spendingRecords={spendingRecords} onAddSpending={handleAddSpending} />
 
-      {/* 3. Settings / Income Controls */}
       <div className="border p-4 rounded-lg bg-white text-black space-y-4">
         <h2 className="text-lg font-bold">Income Controls</h2>
 
-        {/* Initial Balance (set once permanently) */}
         {initialBalance === null ? (
           <form onSubmit={handleInitialSubmit} className="flex gap-2 items-center">
             <input
@@ -124,30 +158,19 @@ useEffect(() => {
               placeholder="Set Initial Balance"
               className="border rounded px-2 py-1 flex-1"
             />
-            <button
-              type="submit"
-              className="bg-yellow-500 text-black px-4 py-1 rounded"
-            >
+            <button type="submit" className="bg-yellow-500 text-black px-4 py-1 rounded">
               Save
             </button>
           </form>
         ) : (
-          <p className="text-green-600 font-semibold">
-            Initial Balance set: {initialBalance}
-          </p>
+          <p className="text-green-600 font-semibold">Initial Balance set: {initialBalance}</p>
         )}
 
-        {/* Monthly Income Form */}
         <IncomeForm onAddIncome={handleAddIncome} />
 
-        {/* Options */}
         <div className="flex gap-4 items-center">
           <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={constantIncome}
-              onChange={() => setConstantIncome(!constantIncome)}
-            />
+            <input type="checkbox" checked={constantIncome} onChange={() => setConstantIncome(!constantIncome)} />
             Constant Monthly Income
           </label>
 
@@ -156,14 +179,16 @@ useEffect(() => {
             <input
               type="number"
               value={titheRate}
-              onChange={(e) => setTitheRate(Number(e.target.value))}
+              onChange={(e) => {
+                setTitheRate(Number(e.target.value));
+                saveDashboard({ initialBalance, titheRate: Number(e.target.value), incomeRecords, spendingRecords });
+              }}
               className="border rounded px-2 py-1 w-16"
             />
           </label>
         </div>
       </div>
 
-      {/* 4. Income History */}
       <div className="border p-4 rounded-lg bg-white text-black">
         <h2 className="text-lg font-bold mb-2">Income History</h2>
         {incomeRecords.length === 0 ? (

@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,51 +19,46 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.error || "Invalid credentials");
-      } else {
-        // save token and redirect to dashboard
+      if (data.token) {
         localStorage.setItem("token", data.token);
         router.push("/dashboard");
+      } else {
+        setError(data.error || "Login failed");
       }
     } catch (err) {
-      setError("Server error");
+      console.error(err);
+      setError("Login failed");
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleLogin}
-        className="p-6 bg-white shadow rounded w-96 space-y-4"
-      >
-        <h1 className="text-xl font-bold text-center">Login</h1>
-        {error && <p className="text-red-500">{error}</p>}
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4">
+        <h1 className="text-2xl font-bold">Login</h1>
+
+        {error && <p className="text-red-600">{error}</p>}
 
         <input
           type="email"
           placeholder="Email"
-          className="border p-2 w-full rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="border p-2 w-full rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-2 rounded"
           required
         />
 
-        <button
-          type="submit"
-          className="bg-green-500 text-white p-2 w-full rounded hover:bg-green-600"
-        >
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
+
+        <button type="submit" className="w-full bg-yellow-500 p-2 rounded text-white font-bold hover:bg-yellow-600 transition">
           Login
         </button>
       </form>

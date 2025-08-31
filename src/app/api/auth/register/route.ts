@@ -1,30 +1,36 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/user";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const { email, password } = body;
 
-    // Connect to MongoDB
-    await connectDB();
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "User already exists" },
-        { status: 400 }
-      );
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    // Hash password and save user
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword });
-    await user.save();
+    const client = await clientPromise;
+    const db = client.db("asratDB");
 
-    return NextResponse.json({ message: "User registered successfully" });
+    const existingUser = await db.collection("users").findOne({ email });
+    if (existingUser) {
+      return NextResponse.json({ error: "User already exists" }, { status: 409 });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.collection("users").insertOne({
+      email,
+      password: hashedPassword,
+      initialBalance: null,
+      titheRate: 10,
+      incomeRecords: [],
+      spendingRecords: [],
+    });
+
+    return NextResponse.json({ success: true });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });
