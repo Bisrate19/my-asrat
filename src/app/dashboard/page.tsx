@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TitheSummary from "./components/TitheSummary";
 import SpendingTable from "./components/SpendingTable";
 import IncomeForm from "./components/IncomeForm";
+import { jwtDecode } from "jwt-decode";
 
 type IncomeRecord = { id: string; month: string; amount: number; tithe: number };
 type SpendingRecord = { id: string; description: string; amount: number; date: string };
@@ -16,8 +17,28 @@ export default function Dashboard() {
   const [initialInput, setInitialInput] = useState<string>(""); // temp input for initial
   const [titheRate, setTitheRate] = useState<number>(10); // % tithe rate
   const [constantIncome, setConstantIncome] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string>("");
 
   const currentMonth = new Date().toLocaleString("default", { month: "long", year: "numeric" });
+
+ 
+
+// Inside your useEffect where you decode the token
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      const email = decoded.email || "User";
+
+      // Extract name part only (before @)
+      const nameOnly = email.split("@")[0];
+      setUserEmail(nameOnly);
+    }
+  }
+}, []);
+
+
 
   // Add Initial Balance (only once)
   const handleSetInitial = (amount: number) => {
@@ -70,7 +91,12 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Tithe Dashboard</h1>
+      {/* Welcome Message */}
+      <h1 className="text-2xl font-bold mb-4">
+        Welcome, {userEmail || "User"}!
+      </h1>
+
+      <h2 className="text-2xl font-bold">Tithe Dashboard</h2>
 
       {/* 1. Summary Section */}
       <TitheSummary
