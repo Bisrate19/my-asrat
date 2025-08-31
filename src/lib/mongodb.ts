@@ -1,30 +1,32 @@
-import mongoose from "mongoose";
+// src/lib/mongodb.ts
+import { MongoClient } from "mongodb";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-if (!MONGODB_URI) {
-  throw new Error("⚠️ Please define the MONGODB_URI in your .env.local file");
+if (!process.env.MONGODB_URI) {
+  throw new Error("Please add your Mongo URI to .env.local");
 }
 
-// Use a global cache to prevent multiple connections in dev & serverless
-let cached = (global as any).mongoose;
+const uri = process.env.MONGODB_URI;
+const options = {};
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
+
+declare global {
+  // Prevent multiple instances during hot reloads in development
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-export async function connectDB() {
-  if (cached.conn) return cached.conn;
-
-  if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(MONGODB_URI, {
-        dbName: "asratDB", // ensure you connect to this DB
-        bufferCommands: false,
-      })
-      .then((mongoose) => mongoose);
+if (process.env.NODE_ENV === "development") {
+  // In development, use a global variable so the client is cached across HMR
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    global._mongoClientPromise = client.connect();
   }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
+  clientPromise = global._mongoClientPromise;
+} else {
+  // In production, create a new client
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
 }
+
+export default clientPromise;
