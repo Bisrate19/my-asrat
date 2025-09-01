@@ -13,7 +13,6 @@ let clientPromise: Promise<MongoClient>;
 
 declare global {
   // Prevent multiple instances during hot reloads in development
-  // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
@@ -28,10 +27,11 @@ if (process.env.NODE_ENV === "development") {
   clientPromise = client.connect();
 }
 
-// ✅ Added
+// ✅ Export connectDB
 export async function connectDB() {
   const client = await clientPromise;
-  return client.db();
+  return client.db("asratDB"); // specify your DB name here
 }
 
+// ✅ Default export for backward compatibility
 export default clientPromise;
