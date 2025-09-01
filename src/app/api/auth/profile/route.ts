@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { connectDB } from "@/lib/mongodb";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 const JWT_SECRET: string = process.env.JWT_SECRET || "supersecretkey";
@@ -12,22 +12,17 @@ interface DecodedToken extends JwtPayload {
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
 
     const token = authHeader.split(" ")[1];
-    if (!token) {
-      return NextResponse.json({ error: "Invalid token format" }, { status: 401 });
-    }
-
     const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
 
-    const client = await clientPromise;
-    const db = client.db("asratDB");
+    const db = await connectDB();
     const user = await db.collection("users").findOne(
       { email: decoded.email },
-      { projection: { password: 0 } } // don’t return password
+      { projection: { password: 0 } } // do not return password
     );
 
     if (!user) {
