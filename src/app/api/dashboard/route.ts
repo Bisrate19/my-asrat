@@ -4,20 +4,12 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
-// Define a type for the decoded JWT payload
-interface DecodedToken {
-  email: string;
-  // Add other properties you expect in the token if needed
-  iat?: number;
-  exp?: number;
-}
-
 export async function GET(req: NextRequest) {
   try {
     const token = req.headers.get("Authorization")?.split(" ")[1];
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+    const decoded: any = jwt.verify(token, JWT_SECRET);
     const email = decoded.email;
 
     const client = await clientPromise;
@@ -43,7 +35,7 @@ export async function POST(req: NextRequest) {
     const token = req.headers.get("Authorization")?.split(" ")[1];
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+    const decoded: any = jwt.verify(token, JWT_SECRET);
     const email = decoded.email;
 
     const body = await req.json();
