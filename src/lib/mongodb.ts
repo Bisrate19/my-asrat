@@ -2,7 +2,7 @@
 import { MongoClient } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
-  throw new Error("Please add your Mongo URI to .env.local");
+  throw new Error("Please add your Mongo URI to .env.local or Vercel Environment Variables");
 }
 
 const uri = process.env.MONGODB_URI;
@@ -17,16 +17,21 @@ declare global {
 }
 
 if (process.env.NODE_ENV === "development") {
-  // In development, use a global variable so the client is cached across HMR
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri, options);
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  // In production, create a new client
   client = new MongoClient(uri, options);
   clientPromise = client.connect();
 }
 
+// ✅ Export connectDB
+export async function connectDB() {
+  const client = await clientPromise;
+  return client.db("asratDB"); // specify your DB name here
+}
+
+// ✅ Default export for backward compatibility
 export default clientPromise;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.collection("users").insertOne({
+    const result = await db.collection("users").insertOne({
       email,
       password: hashedPassword,
       initialBalance: null,
@@ -30,9 +31,20 @@ export async function POST(req: NextRequest) {
       spendingRecords: [],
     });
 
-    return NextResponse.json({ success: true });
+    // ✅ Create JWT token right after signup
+    const token = jwt.sign(
+      { id: result.insertedId.toString(), email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "7d" }
+    );
+
+    return NextResponse.json({
+      success: true,
+      token,
+      user: { id: result.insertedId.toString(), email },
+    });
   } catch (err) {
-    console.error(err);
+    console.error("Register error:", err);
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }

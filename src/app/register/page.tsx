@@ -19,10 +19,15 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
 
-      if (data.success) {
-        router.push("/login");
+      if (res.ok && data.success) {
+        // ✅ Save token in localStorage
+        localStorage.setItem("token", data.token);
+
+        // Redirect straight to dashboard
+        router.push("/dashboard");
       } else {
         setError(data.error || "Registration failed");
       }
@@ -34,7 +39,10 @@ export default function RegisterPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <form onSubmit={handleRegister} className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4">
+      <form
+        onSubmit={handleRegister}
+        className="bg-white p-6 rounded shadow w-full max-w-sm space-y-4"
+      >
         <h1 className="text-2xl font-bold">Register</h1>
 
         {error && <p className="text-red-600">{error}</p>}
@@ -57,7 +65,10 @@ export default function RegisterPage() {
           required
         />
 
-        <button type="submit" className="w-full bg-yellow-500 p-2 rounded text-white font-bold hover:bg-yellow-600 transition">
+        <button
+          type="submit"
+          className="w-full bg-yellow-500 p-2 rounded text-white font-bold hover:bg-yellow-600 transition"
+        >
           Register
         </button>
       </form>

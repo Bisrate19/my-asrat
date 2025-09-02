@@ -3,7 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+const JWT_SECRET: string = process.env.JWT_SECRET || "supersecretkey";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,23 +11,34 @@ export async function POST(req: NextRequest) {
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email and password required" },
+        { status: 400 }
+      );
     }
 
     const client = await clientPromise;
     const db = client.db("asratDB");
 
     const user = await db.collection("users").findOne({ email });
-    if (!user) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!isMatch) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
 
-    const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user._id.toString(), email: user.email },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     return NextResponse.json({ token });
   } catch (err) {
-    console.error(err);
+    console.error("Login error:", err);
     return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }
 }
