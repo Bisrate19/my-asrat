@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   CurrencyDollarIcon,
   CalculatorIcon,
@@ -10,6 +12,27 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function HeroSection() {
+  const [showModal, setShowModal] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const screenshots = [
+    { src: "/tithe dashboard.png", alt: "Dashboard Screenshot 1" },
+    { src: "/income control.png", alt: "Dashboard Screenshot 2" },
+    { src: "/income history0.png", alt: "Dashboard Screenshot 3" },
+    { src: "/spending records0.png", alt: "Dashboard Screenshot 4" },
+  ];
+
+  useEffect(() => {
+    if (paused) return;
+
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % screenshots.length);
+    }, 3000); // change slide every 3s
+
+    return () => clearInterval(timer);
+  }, [paused, screenshots.length]);
+
   const features = [
     {
       title: "Track Your Income",
@@ -109,12 +132,47 @@ export default function HeroSection() {
       </p>
 
       {/* Button */}
-      <button className="group flex items-center px-10 py-4 bg-blue-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 hover:bg-blue-700 transition-all duration-300 mb-12">
+      <button
+        onClick={() => setShowModal(true)}
+        className="group flex items-center px-10 py-4 bg-blue-600 text-white text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 hover:bg-blue-700 transition-all duration-300 mb-12"
+      >
         Start Tracking
         <span className="ml-3 transition-transform duration-300 group-hover:translate-x-2">
           ➔
         </span>
       </button>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-80 text-center">
+            <h3 className="text-xl font-bold mb-4">Welcome!</h3>
+            <p className="text-gray-700 mb-6">
+              Do you have an account or are you new here?
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Link
+                href="/register"
+                className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition"
+              >
+                Register
+              </Link>
+              <Link
+                href="/login"
+                className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
+              >
+                Login
+              </Link>
+            </div>
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-6 text-sm text-gray-500 hover:underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Features Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full mb-20">
@@ -123,9 +181,7 @@ export default function HeroSection() {
             key={index}
             className="bg-white rounded-2xl p-6 shadow-lg text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-105"
           >
-            <div className="transition-transform duration-300 group-hover:scale-110">
-              {feature.icon}
-            </div>
+            <div>{feature.icon}</div>
             <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
             <p className="text-gray-700">{feature.description}</p>
           </div>
@@ -141,11 +197,40 @@ export default function HeroSection() {
           Monitor your income, track your tithes, and manage your finances
           easily.
         </p>
-        <img
-          src="/dashboard-mockup.png"
-          alt="Dashboard Screenshot"
-          className="w-full md:w-3/4 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300"
-        />
+
+        {/* Carousel with auto-slide + pause on hover */}
+        <div
+          className="relative w-full md:w-3/4 overflow-hidden rounded-xl shadow-xl"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <div
+            className="flex transition-transform duration-700"
+            style={{ transform: `translateX(-${current * 100}%)` }}
+          >
+            {screenshots.map((shot, idx) => (
+              <img
+                key={idx}
+                src={shot.src}
+                alt={shot.alt}
+                className="w-full flex-shrink-0"
+              />
+            ))}
+          </div>
+
+          {/* Dots */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            {screenshots.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrent(idx)}
+                className={`w-3 h-3 rounded-full ${
+                  current === idx ? "bg-white" : "bg-gray-400"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* FAQ Section */}
@@ -209,4 +294,3 @@ export default function HeroSection() {
     </section>
   );
 }
-// for the future consider adding how many users are using the app, how many tithes have been calculated, and other statistics to show the impact of the app.
