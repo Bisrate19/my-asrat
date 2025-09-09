@@ -151,7 +151,13 @@ export default function Dashboard() {
         <h2 className="text-lg font-bold">Income Controls</h2>
 
         {initialBalance === null ? (
-          <form onSubmit={handleInitialSubmit} className="flex gap-2 items-center">
+          // <form onSubmit={handleInitialSubmit} className="flex gap-2 items-center">//
+
+          <form
+  onSubmit={handleInitialSubmit}
+  className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center"
+>
+
             <input
               type="number"
               value={initialInput}
