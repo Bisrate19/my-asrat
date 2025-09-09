@@ -28,7 +28,7 @@ export default function HeroSection() {
 
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % screenshots.length);
-    }, 3000); // change slide every 3s
+    }, 3000); // change image slide every 3s
 
     return () => clearInterval(timer);
   }, [paused, screenshots.length]);
