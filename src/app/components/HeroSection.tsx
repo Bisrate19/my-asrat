@@ -17,10 +17,10 @@ export default function HeroSection() {
   const [paused, setPaused] = useState(false);
 
   const screenshots = [
-    { src: "/tithe dashboard.png", alt: "Dashboard Screenshot 1" },
-    { src: "/income control.png", alt: "Dashboard Screenshot 2" },
-    { src: "/income history0.png", alt: "Dashboard Screenshot 3" },
-    { src: "/spending records0.png", alt: "Dashboard Screenshot 4" },
+    { src: "/tithe-dashboard.png", alt: "Dashboard Screenshot 1" },
+    { src: "/income-control.png", alt: "Dashboard Screenshot 2" },
+    { src: "/income-history0.png", alt: "Dashboard Screenshot 3" },
+    { src: "/spending-records0.png", alt: "Dashboard Screenshot 4" },
   ];
 
   useEffect(() => {
